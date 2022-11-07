@@ -2,7 +2,7 @@
 
 Vector3 operator+(Vector3 a, Vector3 b){
     Vector3 c;
-    c.x = a.x + b.x;
+    c.x = a.x + b.x+2;
     c.y = a.y + b.y;
     c.z = a.z + b.z;
     return c;
