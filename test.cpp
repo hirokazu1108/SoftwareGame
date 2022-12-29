@@ -6,4 +6,5 @@ int main(){
   std::cin >> y;
   
   std::cout << (x+y);
+  
 }
