@@ -1,6 +1,7 @@
 #include"header.h"
 
 Vector3 operator+(Vector3 a, Vector3 b){
+    
     Vector3 c;
     c.x = a.x + b.x+2;
     c.y = a.y + b.y;
@@ -51,11 +52,11 @@ Vector3 Cross(Vector3 *a, Vector3 *b){
     return c;
 }
 
-// ʬΥ������Ƥ��줿����ʬ���������ʬĹ�򻻽�
+// 分離軸に投影された軸成分から投影線分長を算出
 float LenSegOnSeparateAxis( Vector3 *Sep, Vector3 *e1, Vector3 *e2, Vector3 *e3 )
 {
-   // 3�Ĥ����Ѥ������ͤ��¤������ʬĹ��׻�
-   // ʬΥ��Sep��ɸ�ಽ����Ƥ��뤳��
+   // 3つの内積の絶対値の和で投影線分長を計算
+   // 分離軸Sepは標準化されていること
    float r1 = fabs(Dot( Sep, e1 ));
    float r2 = fabs(Dot( Sep, e2 ));
    float r3 = (e3 != NULL) ? (fabs(Dot( Sep, e3 ))) : 0;
@@ -65,8 +66,8 @@ float LenSegOnSeparateAxis( Vector3 *Sep, Vector3 *e1, Vector3 *e2, Vector3 *e3 
 
 bool ColOBBs( OBB &obb1, OBB &obb2 )
 {
-   // �������٥��ȥ�γ���
-   // ��N***:ɸ�ಽ�����٥��ȥ��
+   // 各方向ベクトルの確保
+   // （N***:標準化方向ベクトル）
    Vector3 NAe1 = obb1.GetDirect(0), Ae1 = NAe1 * obb1.GetLen_W(0);
    Vector3 NAe2 = obb1.GetDirect(1), Ae2 = NAe2 * obb1.GetLen_W(1);
    Vector3 NAe3 = obb1.GetDirect(2), Ae3 = NAe3 * obb1.GetLen_W(2);
@@ -75,49 +76,49 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
    Vector3 NBe3 = obb2.GetDirect(2), Be3 = NBe3 * obb2.GetLen_W(2);
    Vector3 Interval = obb1.GetPos_W() - obb2.GetPos_W();
 
-   // ʬΥ�� : Ae1
+   // 分離軸 : Ae1
    float rA = Ae1.Len();
    float rB = LenSegOnSeparateAxis( &NAe1, &Be1, &Be2, &Be3 );
    float L = fabs(Dot( &Interval, &NAe1 ));
    if( L > rA + rB )
-      return false; // ���ͤ��Ƥ��ʤ�
+      return false; // 衝突していない
 
-   // ʬΥ�� : Ae2
+   // 分離軸 : Ae2
    rA = Ae2.Len();
    rB = LenSegOnSeparateAxis( &NAe2, &Be1, &Be2, &Be3 );
    L = fabs(Dot( &Interval, &NAe2 ));
    if( L > rA + rB )
    return false;
 
-   // ʬΥ�� : Ae3
+   // 分離軸 : Ae3
    rA = Ae3.Len();
    rB = LenSegOnSeparateAxis( &NAe3, &Be1, &Be2, &Be3 );
    L = fabs(Dot( &Interval, &NAe3 ));
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : Be1
+   // 分離軸 : Be1
    rA = LenSegOnSeparateAxis( &NBe1, &Ae1, &Ae2, &Ae3 );
    rB = Be1.Len();
    L = fabs(Dot( &Interval, &NBe1 ));
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : Be2
+   // 分離軸 : Be2
    rA = LenSegOnSeparateAxis( &NBe2, &Ae1, &Ae2, &Ae3 );
    rB = Be2.Len();
    L = fabs(Dot( &Interval, &NBe2 ));
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : Be3
+   // 分離軸 : Be3
    rA = LenSegOnSeparateAxis( &NBe3, &Ae1, &Ae2, &Ae3 );
    rB = Be3.Len();
    L = fabs(Dot( &Interval, &NBe3 ));
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : C11
+   // 分離軸 : C11
    Vector3 cross;
    cross = Cross(&NAe1, &NBe1 );
    rA = LenSegOnSeparateAxis( &cross, &Ae2, &Ae3 );
@@ -126,7 +127,7 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : C12
+   // 分離軸 : C12
    cross = Cross( &NAe1, &NBe2 );
    rA = LenSegOnSeparateAxis( &cross, &Ae2, &Ae3 );
    rB = LenSegOnSeparateAxis( &cross, &Be1, &Be3 );
@@ -134,7 +135,7 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
       if( L > rA + rB )
    return false;
 
-   // ʬΥ�� : C13
+   // 分離軸 : C13
    cross = Cross( &NAe1, &NBe3 );
    rA = LenSegOnSeparateAxis( &cross, &Ae2, &Ae3 );
    rB = LenSegOnSeparateAxis( &cross, &Be1, &Be2 );
@@ -142,7 +143,7 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : C21
+   // 分離軸 : C21
    cross = Cross( &NAe2, &NBe1 );
    rA = LenSegOnSeparateAxis( &cross, &Ae1, &Ae3 );
    rB = LenSegOnSeparateAxis( &cross, &Be2, &Be3 );
@@ -150,7 +151,7 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : C22
+   // 分離軸 : C22
    cross = Cross( &NAe2, &NBe2 );
    rA = LenSegOnSeparateAxis( &cross, &Ae1, &Ae3 );
    rB = LenSegOnSeparateAxis( &cross, &Be1, &Be3 );
@@ -158,7 +159,7 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : C23
+   // 分離軸 : C23
    cross = Cross( &NAe2, &NBe3 );
    rA = LenSegOnSeparateAxis( &cross, &Ae1, &Ae3 );
    rB = LenSegOnSeparateAxis( &cross, &Be1, &Be2 );
@@ -166,7 +167,7 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : C31
+   // 分離軸 : C31
    cross = Cross( &NAe3, &NBe1 );
    rA = LenSegOnSeparateAxis( &cross, &Ae1, &Ae2 );
    rB = LenSegOnSeparateAxis( &cross, &Be2, &Be3 );
@@ -174,7 +175,7 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : C32
+   // 分離軸 : C32
    cross = Cross( &NAe3, &NBe2 );
    rA = LenSegOnSeparateAxis( &cross, &Ae1, &Ae2 );
    rB = LenSegOnSeparateAxis( &cross, &Be1, &Be3 );
@@ -182,7 +183,7 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
    if( L > rA + rB )
       return false;
 
-   // ʬΥ�� : C33
+   // 分離軸 : C33
    cross = Cross( &NAe3, &NBe3 );
    rA = LenSegOnSeparateAxis( &cross, &Ae1, &Ae2 );
    rB = LenSegOnSeparateAxis( &cross, &Be1, &Be2 );
@@ -190,7 +191,7 @@ bool ColOBBs( OBB &obb1, OBB &obb2 )
    if( L > rA + rB )
       return false;
 
-   // ʬΥʿ�̤�¸�ߤ��ʤ��Τǡ־��ͤ��Ƥ����
+   // 分離平面が存在しないので「衝突している」
    return true;
 }
 
