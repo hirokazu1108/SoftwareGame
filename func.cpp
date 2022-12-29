@@ -1,5 +1,5 @@
 #include"header.h"
-//test6
+
 Vector3 operator+(Vector3 a, Vector3 b){
     
     Vector3 c;
